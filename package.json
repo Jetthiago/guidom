@@ -17,7 +17,7 @@
     "async": "^2.5.0",
     "camelcase": "^4.1.0",
     "handlebars": "^4.0.10",
-    "moloader": "^3.0.5"
+    "moloader": "^3.0.6"
   },
   "devDependencies": {
     "mocha": "^3.4.2"
