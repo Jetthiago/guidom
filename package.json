@@ -4,7 +4,7 @@
   "description": "A Handlebars plugin to help loading template files into the node js runtime, compile it and make available for use faster and without too much effort.",
   "main": "guidom.js",
   "scripts": {
-    "test": "mocha"
+    "test": "node ./node_modules/mocha/bin/mocha"
   },
   "keywords": [
     "handlebars",

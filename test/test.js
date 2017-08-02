@@ -488,4 +488,3 @@ describe("guidom", function () {
         });
     });
 });
-// "test": "node ./node_modules/mocha/bin/mocha"

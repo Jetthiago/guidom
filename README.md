@@ -1,4 +1,5 @@
 # guidom
+[![Build Status](https://travis-ci.org/Jetthiago/guidom.svg?branch=master)](https://travis-ci.org/Jetthiago/guidom)
 A Handlebars plugin to help loading template files into the node js runtime, compile it and make available for use faster and without too much effort.
 I'am working at this documentation. I'll update it when it's ready. For now this will be the placeholder:
 
