@@ -1,0 +1,25 @@
+{
+  "name": "guidom",
+  "version": "0.1.0",
+  "description": "A Handlebars plugin to help loading template files into the node js runtime, compile it and make available for use faster and without too much effort.",
+  "main": "guidom.js",
+  "scripts": {
+    "test": "node ./node_modules/mocha/bin/mocha"
+  },
+  "keywords": [
+    "handlebars",
+    "util",
+    "plugin"
+  ],
+  "author": "Thiago Marques",
+  "license": "MIT",
+  "dependencies": {
+    "async": "^2.5.0",
+    "camelcase": "^4.1.0",
+    "handlebars": "^4.0.10",
+    "moloader": "^3.0.5"
+  },
+  "devDependencies": {
+    "mocha": "^3.4.2"
+  }
+}
