@@ -73,7 +73,7 @@ var guidom = {
      * @param  {string} arg[].name
      * @param  {string} arg[].path
      * @param  {Object} [options]
-     * @callback initialCallback
+     * @param  {Function} initialCallback
      */
     _loadTemplates: function (arg, options, initialCallback) {
         var that = this;
@@ -235,7 +235,7 @@ var guidom = {
      * @param  {string} arg[].name
      * @param  {string} arg[].path
      * @param  {Object} [options]
-     * @callback initialCallback
+     * @param  {Function} initialCallback
      */
     _loadPretemplates: function (arg, options, initialCallback) {
         var that = this;
@@ -428,9 +428,9 @@ var guidom = {
             var dirfiles = fs.readdirSync(dirPathname, "utf-8");
             var templates = {};
             for (var i = 0; i < dirfiles.length; i++) {
-                var basename = camelcase(pathmodule.basename(dirfiles[i]));
                 var pathname = pathmodule.join(dirPathname, dirfiles[i]);
                 if (fs.statSync(pathname).isFile()) {
+                    var basename = camelcase(pathmodule.basename(dirfiles[i]));
                     templates[basename] = guidom.create(basename, pathname, options);
                 }
             }
@@ -496,9 +496,9 @@ var guidom = {
             var dirfiles = fs.readdirSync(dirPathname, "utf-8");
             var templates = {};
             for (var i = 0; i < dirfiles.length; i++) {
-                var basename = camelcase(pathmodule.basename(dirfiles[i]));
                 var pathname = pathmodule.join(dirPathname, dirfiles[i]);
                 if (fs.statSync(pathname).isFile()) {
+                    var basename = camelcase(pathmodule.basename(dirfiles[i]));
                     templates[basename] = guidom.precreate(basename, pathname, options);
                 }
             }
