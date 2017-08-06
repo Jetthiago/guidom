@@ -1,6 +1,6 @@
 {
   "name": "guidom",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A Handlebars plugin to help loading template files into the node js runtime, compile it and make available for use faster and without too much effort.",
   "main": "guidom.js",
   "scripts": {

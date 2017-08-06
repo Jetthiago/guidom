@@ -12,11 +12,11 @@ I'am working at this documentation. I'll update it when it's ready. For now this
 **Parameters**
 **obj**: `Object`
 
-## saveTemplates(bool)
+### saveTemplates(bool)
 **Parameters**
 **bool**: `Boolean`
 
-## returnSyncTemplates(bool)
+### returnSyncTemplates(bool)
 **Parameters**
 **bool**: `Boolean`
 
@@ -66,7 +66,7 @@ response.write(indexPage({firstName: "Jason", secondName: "Brian"}));
 ```
 templates
 |--temp-example.hb
-|--temp-example.hb
+|--temp-example2.hb
 ```
 
 ```js
