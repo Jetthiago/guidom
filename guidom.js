@@ -16,17 +16,26 @@ var handlebars = require("handlebars");
  +-- setHandlebars: ...
  +-- getRoot: ...
  +-- getHandlebars: ...
+ +-- saveTemplates: ...
+ +-- getSaveTemplates: ...
+ +-- returnSyncTemplates: ...
+ +-- getReturnSyncTemplates: ...
 
  Value holders
  +-- templates: ...
  +-- pretemplates: ...
+
+ To do
+ +-- //
 */
 
 var guidom = {
     templates: {},
     pretemplates: {},
     _holders: {
-        root: ""
+        root: "",
+        saveTemplates: true,
+        returnSyncTemplates: true
     },
     /**
      * @param  {string} root
@@ -47,6 +56,64 @@ var guidom = {
         return handlebars;
     },
     /**
+     * @param  {Boolean} [bool=true] Set false to not save templates on guidom.templates
+     */
+    saveTemplates: function (bool) {
+        if (bool == true) {
+            this._holders.saveTemplates = true;
+        } else if (bool == false) {
+            this._holders.saveTemplates = false;
+        }// prevents undefined from seting bool to false;
+    },
+    /**
+     * @return {Boolean}
+     */
+    getSaveTemplates: function () {
+        return this._holders.saveTemplates;
+    },
+    /**
+     * @param  {Boolean} [bool=true] Set false to return guidom object when calling a sync .create function
+     */
+    returnSyncTemplates: function(bool){
+        if (bool == true) {
+            this._holders.returnSyncTemplates = true;
+        } else if (bool == false) {
+            this._holders.returnSyncTemplates = false;
+        }// prevents undefined from seting bool to false;
+    },
+    /**
+     * @return {Boolean}
+     */
+    getReturnSyncTemplates: function () {
+        return this._holders.returnSyncTemplates;
+    },
+    /**
+     * Using given path returns a usable name
+     * @param  {string} string
+     */
+    _getNameFromPath: function (string) {
+        return camelcase(pathmodule.basename(string));
+    },
+    /**
+     * @param  {(Object|string)} arg - Example: {name: hbFunction, ...} || (name, hbFunction)
+     * @param  {Function} templateFunc
+     */
+    _saveTemplate: function (arg, templateFunc) {
+        if (!this._holders.saveTemplates) return;
+        if (typeof arg == "object") {
+            Object.assign(this.templates, arg);
+        } else if (typeof arg == "string" && typeof templateFunc == "function") {
+            this.templates[arg] = templateFunc;
+        }
+    },
+    _returning: function(item){
+        if(this._holders.returnSyncTemplates){
+            return item;
+        } else {
+            return this;
+        }
+    },
+    /**
      * @param  {(Object[]|Object|string)} arg
      * @param  {string} arg[].name
      * @param  {string} arg[].path
@@ -55,25 +122,33 @@ var guidom = {
     _loadTemplatesSync: function (arg, options) {
         if (Array.isArray(arg)) {
             var templates = {};
-            for (var i = 0, len = arg.length; i < len; i++) {
+            for (var i = 0; i < arg.length; i++) {
+                if (!arg[i].name) {
+                    arg[i].name = this._getNameFromPath(arg[i].path);
+                }
                 templates[arg[i].name] = this._buildTemplate(fs.readFileSync(pathmodule.join(this._holders.root, arg[i].path), "utf-8"), options);
             }
-            // concat templates with this.templates;
-            Object.assign(this.templates, templates);
-            return templates;
+            this._saveTemplate(templates);
+            return this._returning(templates);
         } else if (typeof arg == "object") {
-            this.templates[arg.name] = this._buildTemplate(fs.readFileSync(pathmodule.join(this._holders.root, arg.path), "utf-8"), options);
-            return this.templates[arg.name];
+            if (!arg.name) {
+                arg.name = this._getNameFromPath(arg.path);
+            }
+            var template = this._buildTemplate(fs.readFileSync(pathmodule.join(this._holders.root, arg.path), "utf-8"), options);
+            this._saveTemplate(arg.name, template);
+            return this._returning(template);
         } else if (typeof arg == "string") {
-            return this._buildTemplate(fs.readFileSync(pathmodule.join(this._holders.root, arg), "utf-8"), options);
+            var template = this._buildTemplate(fs.readFileSync(pathmodule.join(this._holders.root, arg), "utf-8"), options);
+            this._saveTemplate(this._getNameFromPath(arg), template);
+            return this._returning(template);
         }
     },
     /**
      * @param  {(Object[]|Object|string)} arg
-     * @param  {string} arg[].name
-     * @param  {string} arg[].path
+     * @param  {string} [arg[].name]
+     * @param  {string} [arg[].path]
      * @param  {Object} [options]
-     * @param  {Function} initialCallback
+     * @param  {Function} [initialCallback]
      */
     _loadTemplates: function (arg, options, initialCallback) {
         var that = this;
@@ -90,15 +165,13 @@ var guidom = {
                 stack[arg[index].name] = function (callback) {
                     fs.readFile(pathmodule.join(that._holders.root, arg[index].path), "utf-8", function (err, file) {
                         if (err) return callback(err);
-                        if (typeof options == "function") file = that._buildTemplate(file);
-                        else file = that._buildTemplate(file, options);
+                        file = that._buildTemplate(file, options);
                         callback(null, file);
                     });
                 };
             }
             async.series(stack, function (err, results) {
-                // concat results with that.templates;
-                if (!err) Object.assign(that.templates, results);
+                if (!err) that._saveTemplate(results);
                 verifyOptions(err, results);
             });
         }
@@ -106,9 +179,8 @@ var guidom = {
         else if (typeof arg == "object") {
             fs.readFile(pathmodule.join(this._holders.root, arg.path), "utf-8", function (err, file) {
                 if (!err) {
-                    if (typeof options == "function") file = that._buildTemplate(file);
-                    else file = that._buildTemplate(file, options);
-                    that.templates[arg.name] = file;
+                    file = that._buildTemplate(file, options);
+                    that._saveTemplate(arg.name, file);
                 }
                 verifyOptions(err, file);
             });
@@ -117,9 +189,9 @@ var guidom = {
         else if (typeof arg == "string") {
             fs.readFile(pathmodule.join(this._holders.root, arg), "utf-8", function (err, file) {
                 if (!err) {
-                    if (typeof options == "function") file = that._buildTemplate(file);
-                    else file = that._buildTemplate(file, options);
-                    that.templates[arg.name] = file;
+                    arg = { name: that._getNameFromPath(arg), path: arg };
+                    file = that._buildTemplate(file, options);
+                    that._saveTemplate(arg.name, file);
                 }
                 verifyOptions(err, file);
             });
@@ -147,7 +219,7 @@ var guidom = {
         if (typeof callback == "function" || typeof secondArg == "function" || typeof options == "function") {
             // this._loadTemplates();
             // ([{name: "str", path: "str"}, ...], [options], callback);
-            if (Array.isArray(firstArg) && typeof firstArg[0] == "object" && firstArg[0].name && firstArg[0].path) { // input: [{ name: "string", path: "string"}, ...]
+            if (Array.isArray(firstArg) && typeof firstArg[0] == "object" && firstArg[0].path) { // input: [{ name: "string", path: "string"}, ...]
                 // (array, callback);
                 if (typeof secondArg == "function") {
                     callback = secondArg;
@@ -209,6 +281,18 @@ var guidom = {
     },
 
     /**
+     * @param  {(Object|string)} arg - Example: {name: preHbFunction, ...} || (name, preHbFunction)
+     * @param  {Function} pretemplateFunc
+     */
+    _savePretemplate: function (arg, pretemplateFunc) {
+        if (!this._holders.saveTemplates) return;
+        if (typeof arg == "object") {
+            Object.assign(this.pretemplates, arg);
+        } else if (typeof arg == "string" && typeof pretemplateFunc == "string") {
+            this.pretemplates[arg] = pretemplateFunc;
+        }
+    },
+    /**
      * @param  {(Object[]|Object|string)} arg
      * @param  {string} arg[].name
      * @param  {string} arg[].path
@@ -218,16 +302,24 @@ var guidom = {
         if (Array.isArray(arg)) {
             var pretemplates = {};
             for (var i = 0, len = arg.length; i < len; i++) {
+                if (!arg[i].name) {
+                    arg[i].name = this._getNameFromPath(arg[i].path);
+                }
                 pretemplates[arg[i].name] = this._buildPretemplate(fs.readFileSync(pathmodule.join(this._holders.root, arg[i].path), "utf-8"), options);
             }
-            // concat templates with this.templates;
-            Object.assign(this.pretemplates, pretemplates);
-            return pretemplates;
+            this._savePretemplate(pretemplates);
+            return this._returning(pretemplates);
         } else if (typeof arg == "object") {
-            this.pretemplates[arg.name] = this._buildPretemplate(fs.readFileSync(pathmodule.join(this._holders.root, arg.path), "utf-8"), options);
-            return this.pretemplates[arg.name];
+            if (!arg.name) {
+                arg.name = this._getNameFromPath(arg.path);
+            }
+            var pretemplate = this._buildPretemplate(fs.readFileSync(pathmodule.join(this._holders.root, arg.path), "utf-8"), options);
+            this._savePretemplate(arg.name, pretemplate);
+            return this._returning(pretemplate);
         } else if (typeof arg == "string") {
-            return this._buildPretemplate(fs.readFileSync(pathmodule.join(this._holders.root, arg), "utf-8"), options);
+            var pretemplate = this._buildPretemplate(fs.readFileSync(pathmodule.join(this._holders.root, arg), "utf-8"), options);
+            this._savePretemplate(this._getNameFromPath(arg), template);
+            return this._returning(pretemplate);
         }
     },
     /**
@@ -252,15 +344,14 @@ var guidom = {
                 stack[arg[i].name] = function (callback) {
                     fs.readFile(pathmodule.join(that._holders.root, arg[index].path), "utf-8", function (err, file) {
                         if (err) return callback(err);
-                        if (typeof options == "function") file = that._buildPretemplate(file);
-                        else file = that._buildPretemplate(file, options);
+                        file = that._buildPretemplate(file, options);
                         callback(null, file);
                     });
                 };
             }
             async.series(stack, function (err, results) {
                 // concat results with that.pretemplates;
-                if (!err) Object.assign(that.pretemplates, results);
+                if (!err) that._savePretemplate(results);
                 verifyOptions(err, results);
             });
         }
@@ -268,20 +359,19 @@ var guidom = {
         else if (typeof arg == "object") {
             fs.readFile(pathmodule.join(this._holders.root, arg.path), "utf-8", function (err, file) {
                 if (!err) {
-                    if (typeof options == "function") file = that._buildPretemplate(file);
-                    else file = that._buildPretemplate(file, options);
-                    that.pretemplates[arg.name] = file;
+                    file = that._buildPretemplate(file, options);
+                    that._savePretemplate(arg.name, file);
                 }
                 verifyOptions(err, file);
             });
         }
-        // ("name", [options], callback);
+        // ("path", [options], callback);
         else if (typeof arg == "string") {
             fs.readFile(pathmodule.join(this._holders.root, arg), "utf-8", function (err, file) {
                 if (!err) {
-                    if (typeof options == "function") file = that._buildPretemplate(file);
-                    else file = that._buildPretemplate(file, options);
-                    that.pretemplates[arg.name] = file;
+                    arg = { name: that._getNameFromPath(arg), path: arg };
+                    file = that._buildPretemplate(file, options);
+                    that._saveTemplate(arg.name, file);
                 }
                 verifyOptions(err, file);
             });
@@ -310,7 +400,7 @@ var guidom = {
         if (typeof callback == "function" || typeof secondArg == "function" || typeof options == "function") {
             // this._loadPretemplates();
             // ([{name: "str", path: "str"}, ...], [options], callback);
-            if (Array.isArray(firstArg) && typeof firstArg[0] == "object" && firstArg[0].name && firstArg[0].path) { // input: [{ name: "string", path: "string"}, ...]
+            if (Array.isArray(firstArg) && typeof firstArg[0] == "object" && firstArg[0].path) { // input: [{ name: "string", path: "string"}, ...]
                 // (array, callback);
                 if (typeof secondArg == "function") {
                     callback = secondArg;
@@ -350,7 +440,7 @@ var guidom = {
         } else {
             // this._loadPretemplatesSync();
             // ([{ name: "str", path: "str"}, ...], [options]);
-            if (Array.isArray(firstArg) && firstArg[0].name && firstArg[0].path) {
+            if (Array.isArray(firstArg) && firstArg[0].path) {
                 var result = {};
                 if (typeof secondArg == "object") options = secondArg;
                 for (var i = 0; i < firstArg.length; i++) {

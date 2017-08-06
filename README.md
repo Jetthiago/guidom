@@ -12,11 +12,25 @@ I'am working at this documentation. I'll update it when it's ready. For now this
 **Parameters**
 **obj**: `Object`
 
-### getHandlebars()
-**return**: `Object`
+## saveTemplates(bool)
+**Parameters**
+**bool**: `Boolean`
+
+## returnSyncTemplates(bool)
+**Parameters**
+**bool**: `Boolean`
 
 ### getRoot()
 **return**: `string`
+
+### getHandlebars()
+**return**: `Object`
+
+### getSaveTemplates()
+**return**: `Boolean`
+
+### getReturnSyncTemplates()
+**return**: `Boolean`
 
 ### create(firstArg, [secondArg], [options], [callback]) 
 **Parameters**
@@ -78,3 +92,4 @@ Works the same way as .openDir() but returns the precompiled string and the func
 **callback**: `function(err, pretemplates)`
 
 * * *
+**Side note: I will publish this module to npm when I address the majority of the possible bugs and add the features that I have in mind**
