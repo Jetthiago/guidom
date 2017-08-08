@@ -471,6 +471,33 @@ describe("guidom", function () {
         });
     });
 
+    describe("#saveTemplates", function(){
+        it("should not save the template when set to false", function(){
+            guidom.saveTemplates(false);
+            var template = guidom.create("notSaved", testFileInfo.fileName1);
+            assert.equal(guidom.templates.notSaved, undefined);
+            guidom.saveTemplates(true);
+        });
+    });
+    describe("#getSaveTemplates", function(){
+        it("should return true by default", function(){
+            assert.equal(guidom.getSaveTemplates(), true);
+        });
+    });
+
+    describe("#returnSyncTemplates", function(){
+        it("should make sync .create() return the guidom object instead of the template created", function(){
+            guidom.returnSyncTemplates(false);
+            assert.equal(guidom.create("returnGuidom", testFileInfo.fileName1), guidom);
+            guidom.returnSyncTemplates(true);
+        });
+    });
+    describe("#getReturnSyncTemplates", function(){
+        it("should reuturn true by default", function(){
+            assert.equal(guidom.getReturnSyncTemplates(), true);
+        });
+    });
+
     describe("END", function () {
         it("delete test dir", function () {
             if (fs.existsSync(testFileInfo.fileName1)) {

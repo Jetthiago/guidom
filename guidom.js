@@ -26,9 +26,8 @@ var handlebars = require("handlebars");
  +-- pretemplates: ...
 
  To do
- +-- test new features: 
-    +-- .saveTemplates()
-    +-- .returnSyncTemplates()
+ +-- .create from array: [{name: path}, {name1: path1}]
+ +-- Continue working on documentation
 */
 
 var guidom = {
