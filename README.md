@@ -6,11 +6,11 @@ I'am working at this documentation. I'll update it when it's ready. For now this
 
 * * *
 ### create(firstArg, [secondArg], [options], [callback]) 
-**Parameters**
-**firstArg**: `Object[] | Object | string`
-**secondArg**: `function | Object | string`
-**options**: `function | Object`
-**callback**: `function(err, templates)`
+**Parameters**  
+**firstArg**: `Object[] | Object | string`  
+**secondArg**: `function | Object | string`  
+**options**: `function | Object`  
+**callback**: `function(err, templates)`  
 - **List of possible arguments:**
 ```js
 ([{name: "string", path: "string"}, ...], [options], [callback]);
@@ -25,7 +25,7 @@ without callback returns: templateFunction */
 ```js
 ("path", [options], [callback]);
 /* callback arguments: (error, templateFunction),
-without callback returns: templateFunction.
+without callback returns: templateFunction
 get the template function using the object returned .{fileBasename} or guidom.templates.{fileBasename} */
 ```
 ```js
@@ -33,7 +33,6 @@ get the template function using the object returned .{fileBasename} or guidom.te
 /* callback arguments: (error, templateFunction),
 without callback reuturns: templateFunction */
 ```
-- **Future possible arguments:**
 ```js
 (["templates/main-page.hb", ...], [options], [callback]);
 /* get the template function using the object returned .mainPage or guidom.templates.mainPage */

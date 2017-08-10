@@ -14,6 +14,7 @@ var testFileInfo = {
     dirName: "testTempDir",
     fileName1: "/testTempFile1.hb",
     fileName2: "/testTempFile2.hb",
+    fileNamePrefix: "testTempFile",
     dirCrasher: "/crasher"
 }
 testFileInfo.fileName1 = testFileInfo.dirName + testFileInfo.fileName1;
@@ -25,6 +26,9 @@ var expected = {
     output2: "<p>Hello, my name is Brian. I am from Somewhere, TX. I have 2 kids:</p> <ul><li>Andrew is 7</li><li>Sara is 15</li></ul>",
     root: testFileInfo.dirName
 }
+
+
+
 
 describe("guidom", function () {
     describe("creating temporary directory", function () {
@@ -67,6 +71,26 @@ describe("guidom", function () {
     });
 
     describe("#create()", function () {
+        /**
+         * @param  {function} template
+         * @param  {string} prefix
+         * @param  {number} index
+         */
+        function testEndTemplate(template, prefix, index) {
+            if (!index) {
+                index = "1";
+                var savedIndex = "";
+            } else {
+                var savedIndex = index;
+            }
+            var handlebars = guidom.getHandlebars();
+            assert.equal(template(testFileInfo["context" + index]), expected["output" + index]);
+            if (prefix) {
+                var saved = guidom.templates[prefix + savedIndex];
+                assert.equal(saved(testFileInfo["context" + index]), expected["output" + index]);
+            }
+        }
+
         /* _-_-_-_-_-_- ASYNC METHODS _-_-_-_-_-_- */
 
         describe("create with args (array, [options], callback)", function () {
@@ -92,6 +116,20 @@ describe("guidom", function () {
                     done();
                 });
             });
+            it("should return (err, {templates} to callback when called with (['path', ...], callback)", function (done) {
+                var arraySingleString = [];
+                var prefix = testFileInfo.fileNamePrefix;
+                for (var i = 0; i < array.length; i++) {
+                    arraySingleString[i] = array[i].path;
+                }
+                guidom.create(arraySingleString, function (err, results) {
+                    if (err) return done(err);
+                    for (var i = 1; i <= array.length; i++) {
+                        testEndTemplate(results[prefix + i], prefix, i);
+                    }
+                    done();
+                });
+            });
         });
 
         describe("create with args: ('name', 'path', [options], callback)", function () {
@@ -114,7 +152,7 @@ describe("guidom", function () {
             });
         });
 
-        describe("create with args: ('path', [options], callback) |or| ({name: 'str', path: 'str'}, [options], callback)", function () {
+        describe("create with args: ('path', [options], callback) |or| ({path: 'str', [name: 'str']}, [options], callback)", function () {
             it("should return (err, template) to callback when called with ('path')", function (done) {
                 guidom.create(testFileInfo.fileName1, function (err, results) {
                     if (err) return done(err);
@@ -170,6 +208,14 @@ describe("guidom", function () {
                 assert.equal(guidom.templates.syncArrayOptions1(testFileInfo.context1), expected.output1);
                 assert.equal(guidom.templates.syncArrayOptions2(testFileInfo.context2), expected.output2);
             });
+            it("should return a template when called with (['path', ...])", function () {
+                var array = [testFileInfo.fileName1, testFileInfo.fileName2];
+                var prefix = testFileInfo.fileNamePrefix;
+                var templates = guidom.create(array);
+                for (var i = 1; i < array.length; i++) {
+                    testEndTemplate(templates[prefix + i], prefix, i);
+                }
+            });
         });
 
         describe("create with: ('name', 'path', [options])", function () {
@@ -186,7 +232,7 @@ describe("guidom", function () {
             });
         });
 
-        describe("create with:  ('path', [options]) |or| ({name: 'str', path: 'str'}, [options])", function () {
+        describe("create with:  ('path', [options]) |or| ({path: 'str', [name: 'str']}, [options])", function () {
             it("should return a template when called with ('path')", function () {
                 var template = guidom.create(testFileInfo.fileName1);
                 assert.equal(template(testFileInfo.context1), expected.output1);
@@ -212,6 +258,11 @@ describe("guidom", function () {
     });
 
     describe("#precreate()", function () {
+        /**
+         * @param  {string} template
+         * @param  {string} prefix
+         * @param  {number} index
+         */
         function testEndPretemplate(template, prefix, index) {
             if (!index) {
                 index = "1";
@@ -248,6 +299,14 @@ describe("guidom", function () {
                 var pretemplates = guidom.precreate(array, options);
                 for (var i = 1; i <= array.length; i++) { testEndPretemplate(pretemplates[prefix + i], prefix, i); }
             });
+            it("should return a template when called with (['path', ...])", function () {
+                var prefix = testFileInfo.fileNamePrefix;
+                var array = [testFileInfo.fileName1, testFileInfo.fileName2];
+                var pretemplates = guidom.precreate(array);
+                for (var i = 1; i <= array.length; i++) {
+                    testEndPretemplate(pretemplates[prefix + i], prefix, i);
+                }
+            })
         });
 
         describe("precreate with args: ('name', 'path', [options])", function () {
@@ -265,7 +324,7 @@ describe("guidom", function () {
             });
         });
 
-        describe("precreate with: ('path', [options]) |or| ({name: 'str', path: 'str'}, [options])", function () {
+        describe("precreate with: ('path', [options]) |or| ({path: 'str', [name: 'str']}, [options])", function () {
             // ('path', [options]);
             it("should return a template when called with ('path')", function () {
                 var prefix = testFileInfo.fileName1;
@@ -313,6 +372,17 @@ describe("guidom", function () {
                     done();
                 });
             });
+            it("should return (err, {pretemplates}) to callback when called whit (array, callback)", function (done) {
+                var prefix = testFileInfo.fileNamePrefix;
+                var array = [testFileInfo.fileName1, testFileInfo.fileName2];
+                guidom.precreate(array, function (err, pretemplates) {
+                    if (err) return done(err);
+                    for (var i = 1; i <= array.length; i++) {
+                        testEndPretemplate(pretemplates[prefix + i], prefix, i);
+                    }
+                    done();
+                })
+            });
         });
 
         describe("precreate with args ('name', 'path', [options], callback)", function () {
@@ -335,7 +405,7 @@ describe("guidom", function () {
             });
         });
 
-        describe("precreate with args: ('path', [options], callback) |or| ({name: 'str', path: 'str'}, [options], callback)", function () {
+        describe("precreate with args: ('path', [options], callback) |or| ({path: 'str', [name: 'str']}, [options], callback)", function () {
             it("should return (err, pretemplate) to callback when called with ('path')", function (done) {
                 guidom.precreate(testFileInfo.fileName1, function (err, pretemplate) {
                     if (err) return done(err);
@@ -471,29 +541,29 @@ describe("guidom", function () {
         });
     });
 
-    describe("#saveTemplates", function(){
-        it("should not save the template when set to false", function(){
+    describe("#saveTemplates", function () {
+        it("should not save the template when set to false", function () {
             guidom.saveTemplates(false);
             var template = guidom.create("notSaved", testFileInfo.fileName1);
             assert.equal(guidom.templates.notSaved, undefined);
             guidom.saveTemplates(true);
         });
     });
-    describe("#getSaveTemplates", function(){
-        it("should return true by default", function(){
+    describe("#getSaveTemplates", function () {
+        it("should return true by default", function () {
             assert.equal(guidom.getSaveTemplates(), true);
         });
     });
 
-    describe("#returnSyncTemplates", function(){
-        it("should make sync .create() return the guidom object instead of the template created", function(){
+    describe("#returnSyncTemplates", function () {
+        it("should make sync .create() return the guidom object instead of the template created", function () {
             guidom.returnSyncTemplates(false);
             assert.equal(guidom.create("returnGuidom", testFileInfo.fileName1), guidom);
             guidom.returnSyncTemplates(true);
         });
     });
-    describe("#getReturnSyncTemplates", function(){
-        it("should reuturn true by default", function(){
+    describe("#getReturnSyncTemplates", function () {
+        it("should reuturn true by default", function () {
             assert.equal(guidom.getReturnSyncTemplates(), true);
         });
     });

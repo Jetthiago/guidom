@@ -26,7 +26,6 @@ var handlebars = require("handlebars");
  +-- pretemplates: ...
 
  To do
- +-- .create from array: [{name: path}, {name1: path1}]
  +-- Continue working on documentation
 */
 
@@ -75,7 +74,7 @@ var guidom = {
     /**
      * @param  {Boolean} [bool=true] Set false to return guidom object when calling a sync .create function
      */
-    returnSyncTemplates: function(bool){
+    returnSyncTemplates: function (bool) {
         if (bool == true) {
             this._holders.returnSyncTemplates = true;
         } else if (bool == false) {
@@ -93,7 +92,20 @@ var guidom = {
      * @param  {string} string
      */
     _getNameFromPath: function (string) {
-        return camelcase(pathmodule.basename(string));
+        return camelcase(pathmodule.basename(string, pathmodule.extname(string)));
+    },
+    /**
+     * @param  {(Object|string)} arg
+     */
+    _getInfoFromInput: function (arg) {
+        if (typeof arg == "object" && !arg.name) {
+            // ([{name: "[str]", path: "str"}, ...]);
+            arg.name = this._getNameFromPath(arg.path);
+        } else if (typeof arg == "string") {
+            // (["path", ...]);
+            arg = { name: this._getNameFromPath(arg), path: arg };
+        }
+        return arg;
     },
     /**
      * @param  {(Object|string)} arg - Example: {name: hbFunction, ...} || (name, hbFunction)
@@ -107,8 +119,8 @@ var guidom = {
             this.templates[arg] = templateFunc;
         }
     },
-    _returning: function(item){
-        if(this._holders.returnSyncTemplates){
+    _returning: function (item) {
+        if (this._holders.returnSyncTemplates) {
             return item;
         } else {
             return this;
@@ -122,25 +134,20 @@ var guidom = {
      */
     _loadTemplatesSync: function (arg, options) {
         if (Array.isArray(arg)) {
+            // ([{name: "str", path: "str"}, ...], [options]);
             var templates = {};
             for (var i = 0; i < arg.length; i++) {
-                if (!arg[i].name) {
-                    arg[i].name = this._getNameFromPath(arg[i].path);
-                }
+                arg[i] = this._getInfoFromInput(arg[i]);
                 templates[arg[i].name] = this._buildTemplate(fs.readFileSync(pathmodule.join(this._holders.root, arg[i].path), "utf-8"), options);
             }
             this._saveTemplate(templates);
             return this._returning(templates);
-        } else if (typeof arg == "object") {
-            if (!arg.name) {
-                arg.name = this._getNameFromPath(arg.path);
-            }
+        } else {
+            // ({name: "[str]", path: "str"}, [options], callback);
+            // ("name", [options], callback);
+            arg = this._getInfoFromInput(arg);
             var template = this._buildTemplate(fs.readFileSync(pathmodule.join(this._holders.root, arg.path), "utf-8"), options);
             this._saveTemplate(arg.name, template);
-            return this._returning(template);
-        } else if (typeof arg == "string") {
-            var template = this._buildTemplate(fs.readFileSync(pathmodule.join(this._holders.root, arg), "utf-8"), options);
-            this._saveTemplate(this._getNameFromPath(arg), template);
             return this._returning(template);
         }
     },
@@ -158,11 +165,12 @@ var guidom = {
             if (err) return initialCallback(err);
             initialCallback(null, results); // results: {name1: "template1", ...};
         }
-        // ([{name: "str", path: "str"}, ...], [options], callback);
         if (Array.isArray(arg)) {
+            // ([{name: "str", path: "str"}, ...], [options], callback);
             var stack = {};
             for (var i = 0; i < arg.length; i++) {
                 var index = i; // something I can't understand about this i inside this function;
+                arg[index] = that._getInfoFromInput(arg[index]);
                 stack[arg[index].name] = function (callback) {
                     fs.readFile(pathmodule.join(that._holders.root, arg[index].path), "utf-8", function (err, file) {
                         if (err) return callback(err);
@@ -175,22 +183,12 @@ var guidom = {
                 if (!err) that._saveTemplate(results);
                 verifyOptions(err, results);
             });
-        }
-        // ({name: "str", path: "str"}, [options], callback);
-        else if (typeof arg == "object") {
-            fs.readFile(pathmodule.join(this._holders.root, arg.path), "utf-8", function (err, file) {
+        } else {
+            // ({name: "[str]", path: "str"}, [options], callback);
+            // ("name", [options], callback);
+            arg = that._getInfoFromInput(arg);
+            fs.readFile(pathmodule.join(that._holders.root, arg.path), "utf-8", function (err, file) {
                 if (!err) {
-                    file = that._buildTemplate(file, options);
-                    that._saveTemplate(arg.name, file);
-                }
-                verifyOptions(err, file);
-            });
-        }
-        // ("name", [options], callback);
-        else if (typeof arg == "string") {
-            fs.readFile(pathmodule.join(this._holders.root, arg), "utf-8", function (err, file) {
-                if (!err) {
-                    arg = { name: that._getNameFromPath(arg), path: arg };
                     file = that._buildTemplate(file, options);
                     that._saveTemplate(arg.name, file);
                 }
@@ -303,23 +301,15 @@ var guidom = {
         if (Array.isArray(arg)) {
             var pretemplates = {};
             for (var i = 0, len = arg.length; i < len; i++) {
-                if (!arg[i].name) {
-                    arg[i].name = this._getNameFromPath(arg[i].path);
-                }
+                arg[i] = this._getInfoFromInput(arg[i]);
                 pretemplates[arg[i].name] = this._buildPretemplate(fs.readFileSync(pathmodule.join(this._holders.root, arg[i].path), "utf-8"), options);
             }
             this._savePretemplate(pretemplates);
             return this._returning(pretemplates);
-        } else if (typeof arg == "object") {
-            if (!arg.name) {
-                arg.name = this._getNameFromPath(arg.path);
-            }
+        } else {
+            arg = this._getInfoFromInput(arg);
             var pretemplate = this._buildPretemplate(fs.readFileSync(pathmodule.join(this._holders.root, arg.path), "utf-8"), options);
             this._savePretemplate(arg.name, pretemplate);
-            return this._returning(pretemplate);
-        } else if (typeof arg == "string") {
-            var pretemplate = this._buildPretemplate(fs.readFileSync(pathmodule.join(this._holders.root, arg), "utf-8"), options);
-            this._savePretemplate(this._getNameFromPath(arg), template);
             return this._returning(pretemplate);
         }
     },
@@ -342,6 +332,7 @@ var guidom = {
             var stack = {};
             for (var i = 0; i < arg.length; i++) {
                 var index = i; // something I can't understand about this i inside this function;
+                arg[i] = that._getInfoFromInput(arg[i]);
                 stack[arg[i].name] = function (callback) {
                     fs.readFile(pathmodule.join(that._holders.root, arg[index].path), "utf-8", function (err, file) {
                         if (err) return callback(err);
@@ -355,24 +346,14 @@ var guidom = {
                 if (!err) that._savePretemplate(results);
                 verifyOptions(err, results);
             });
-        }
-        // ({name: "str", path: "str"}, [options], callback);
-        else if (typeof arg == "object") {
+        } else {
+            // ({name: "str", path: "str"}, [options], callback);
+            // ("path", [options], callback);
+            arg = that._getInfoFromInput(arg);
             fs.readFile(pathmodule.join(this._holders.root, arg.path), "utf-8", function (err, file) {
                 if (!err) {
                     file = that._buildPretemplate(file, options);
                     that._savePretemplate(arg.name, file);
-                }
-                verifyOptions(err, file);
-            });
-        }
-        // ("path", [options], callback);
-        else if (typeof arg == "string") {
-            fs.readFile(pathmodule.join(this._holders.root, arg), "utf-8", function (err, file) {
-                if (!err) {
-                    arg = { name: that._getNameFromPath(arg), path: arg };
-                    file = that._buildPretemplate(file, options);
-                    that._saveTemplate(arg.name, file);
                 }
                 verifyOptions(err, file);
             });
@@ -401,7 +382,7 @@ var guidom = {
         if (typeof callback == "function" || typeof secondArg == "function" || typeof options == "function") {
             // this._loadPretemplates();
             // ([{name: "str", path: "str"}, ...], [options], callback);
-            if (Array.isArray(firstArg) && typeof firstArg[0] == "object" && firstArg[0].path) { // input: [{ name: "string", path: "string"}, ...]
+            if (Array.isArray(firstArg)) { // input: [{ name: "string", path: "string"}, ...]
                 // (array, callback);
                 if (typeof secondArg == "function") {
                     callback = secondArg;
