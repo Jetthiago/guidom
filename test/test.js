@@ -32,7 +32,7 @@ var expected = {
 
 describe("guidom", function () {
     describe("creating temporary directory", function () {
-        it("should create files inside the directory", function () {
+        it("should compile files inside the directory", function () {
             if (!fs.existsSync(testFileInfo.dirName)) {
                 fs.mkdirSync(testFileInfo.dirName);
             }
@@ -51,9 +51,9 @@ describe("guidom", function () {
     describe("#setRoot()", function () {
         it("should set the root directory", function () {
             var extractedPathname = pathmodule.basename(testFileInfo.fileName1);
-            var expectedTemplate = guidom.create(testFileInfo.fileName1);
+            var expectedTemplate = guidom.compile(testFileInfo.fileName1);
             guidom.setRoot(expected.root);
-            var rootedPathname = guidom.create(extractedPathname);
+            var rootedPathname = guidom.compile(extractedPathname);
             assert.equal(expected.root, guidom.getRoot());
             guidom.setRoot("");
             assert.equal(expectedTemplate(testFileInfo.context1), rootedPathname(testFileInfo.context1));
@@ -70,7 +70,7 @@ describe("guidom", function () {
         })
     });
 
-    describe("#create()", function () {
+    describe("#compile()", function () {
         /**
          * @param  {function} template
          * @param  {string} prefix
@@ -93,10 +93,10 @@ describe("guidom", function () {
 
         /* _-_-_-_-_-_- ASYNC METHODS _-_-_-_-_-_- */
 
-        describe("create with args (array, [options], callback)", function () {
+        describe("compile with args (array, [options], callback)", function () {
             var array = [{ name: "asyncArray1", path: testFileInfo.fileName1 }, { name: "asyncArray2", path: testFileInfo.fileName2 }];
             it("should return (err, {templates}) to callback when called with (array, callback)", function (done) {
-                guidom.create(array, function (err, results) {
+                guidom.compile(array, function (err, results) {
                     if (err) return done(err);
                     assert.equal(results.asyncArray1(testFileInfo.context1), expected.output1);
                     assert.equal(results.asyncArray2(testFileInfo.context2), expected.output2);
@@ -107,7 +107,7 @@ describe("guidom", function () {
             });
             it("should return (err, {templates}) to callback when called with (array, options, callback)", function (done) {
                 var options = { knowHelpersOnly: true };
-                guidom.create(array, options, function (err, results) {
+                guidom.compile(array, options, function (err, results) {
                     if (err) return done(err);
                     assert.equal(results.asyncArray1(testFileInfo.context1), expected.output1);
                     assert.equal(results.asyncArray2(testFileInfo.context2), expected.output2);
@@ -122,7 +122,7 @@ describe("guidom", function () {
                 for (var i = 0; i < array.length; i++) {
                     arraySingleString[i] = array[i].path;
                 }
-                guidom.create(arraySingleString, function (err, results) {
+                guidom.compile(arraySingleString, function (err, results) {
                     if (err) return done(err);
                     for (var i = 1; i <= array.length; i++) {
                         testEndTemplate(results[prefix + i], prefix, i);
@@ -132,9 +132,9 @@ describe("guidom", function () {
             });
         });
 
-        describe("create with args: ('name', 'path', [options], callback)", function () {
+        describe("compile with args: ('name', 'path', [options], callback)", function () {
             it("should return (err, template) to callback when called with ('name', 'path', callback)", function (done) {
-                guidom.create("asyncTwoStr", testFileInfo.fileName1, function (err, results) {
+                guidom.compile("asyncTwoStr", testFileInfo.fileName1, function (err, results) {
                     if (err) return done(err);
                     assert.equal(results(testFileInfo.context1), expected.output1);
                     assert.equal(guidom.templates.asyncTwoStr(testFileInfo.context1), expected.output1);
@@ -143,7 +143,7 @@ describe("guidom", function () {
             });
             it("should return (err, template) to callback when called with ('name', 'path', options, callback)", function (done) {
                 var options = { knowHelpersOnly: true };
-                guidom.create("asyncTwoStrOptions", testFileInfo.fileName1, options, function (err, results) {
+                guidom.compile("asyncTwoStrOptions", testFileInfo.fileName1, options, function (err, results) {
                     if (err) return done(err);
                     assert.equal(results(testFileInfo.context1), expected.output1);
                     assert.equal(guidom.templates.asyncTwoStrOptions(testFileInfo.context1), expected.output1);
@@ -152,9 +152,9 @@ describe("guidom", function () {
             });
         });
 
-        describe("create with args: ('path', [options], callback) |or| ({path: 'str', [name: 'str']}, [options], callback)", function () {
+        describe("compile with args: ('path', [options], callback) |or| ({path: 'str', [name: 'str']}, [options], callback)", function () {
             it("should return (err, template) to callback when called with ('path')", function (done) {
-                guidom.create(testFileInfo.fileName1, function (err, results) {
+                guidom.compile(testFileInfo.fileName1, function (err, results) {
                     if (err) return done(err);
                     assert.equal(results(testFileInfo.context1), expected.output1);
                     done();
@@ -162,7 +162,7 @@ describe("guidom", function () {
             });
             it("should return (err, template) to callback when called with ('path', options)", function (done) {
                 var options = { knowHelpersOnly: true };
-                guidom.create(testFileInfo.fileName1, options, function (err, results) {
+                guidom.compile(testFileInfo.fileName1, options, function (err, results) {
                     if (err) return done(err);
                     assert.equal(results(testFileInfo.context1), expected.output1);
                     done();
@@ -170,7 +170,7 @@ describe("guidom", function () {
             });
 
             it("should return (err, template) to callback when called with ({name:'str', path: str}, options, callback)", function (done) {
-                guidom.create({ path: testFileInfo.fileName1, name: "asyncObject" }, function (err, results) {
+                guidom.compile({ path: testFileInfo.fileName1, name: "asyncObject" }, function (err, results) {
                     if (err) return done(err);
                     assert.equal(results(testFileInfo.context1), expected.output1);
                     assert.equal(guidom.templates.asyncObject(testFileInfo.context1), expected.output1);
@@ -179,7 +179,7 @@ describe("guidom", function () {
             });
             it("should return (err, template) to callback when called with ({name: 'str', path:'str'}, options, callback)", function (done) {
                 var options = { knowHelpersOnly: true };
-                guidom.create({ path: testFileInfo.fileName1, name: "asyncObject" }, options, function (err, results) {
+                guidom.compile({ path: testFileInfo.fileName1, name: "asyncObject" }, options, function (err, results) {
                     if (err) return done(err);
                     assert.equal(results(testFileInfo.context1), expected.output1);
                     assert.equal(guidom.templates.asyncObject(testFileInfo.context1), expected.output1);
@@ -189,11 +189,11 @@ describe("guidom", function () {
         });
 
         /* _-_-_-_-_-_- SYNC METHODS _-_-_-_-_-_- */
-        describe("create with: (array, [options])", function () {
+        describe("compile with: (array, [options])", function () {
             // ([{ name: "str", path: "str"}, ...], [options]);
             it("should return a template when called with ([{ name: 'str', path: 'str'}, ...])", function () {
                 var array = [{ name: "syncArray1", path: testFileInfo.fileName1 }, { name: "syncArray2", path: testFileInfo.fileName2 }];
-                var templates = guidom.create(array);
+                var templates = guidom.compile(array);
                 assert.equal(templates.syncArray1(testFileInfo.context1), expected.output1);
                 assert.equal(templates.syncArray2(testFileInfo.context2), expected.output2);
                 assert.equal(guidom.templates.syncArray1(testFileInfo.context1), expected.output1);
@@ -202,7 +202,7 @@ describe("guidom", function () {
             it("should return a template when called with ([{ name: 'str' path: 'str'}, ...], options)", function () {
                 var array = [{ name: "syncArrayOptions1", path: testFileInfo.fileName1 }, { name: "syncArrayOptions2", path: testFileInfo.fileName2 }];
                 var options = { knowHelpersOnly: true };
-                var templates = guidom.create(array, options);
+                var templates = guidom.compile(array, options);
                 assert.equal(templates.syncArrayOptions1(testFileInfo.context1), expected.output1);
                 assert.equal(templates.syncArrayOptions2(testFileInfo.context2), expected.output2);
                 assert.equal(guidom.templates.syncArrayOptions1(testFileInfo.context1), expected.output1);
@@ -211,53 +211,53 @@ describe("guidom", function () {
             it("should return a template when called with (['path', ...])", function () {
                 var array = [testFileInfo.fileName1, testFileInfo.fileName2];
                 var prefix = testFileInfo.fileNamePrefix;
-                var templates = guidom.create(array);
+                var templates = guidom.compile(array);
                 for (var i = 1; i < array.length; i++) {
                     testEndTemplate(templates[prefix + i], prefix, i);
                 }
             });
         });
 
-        describe("create with: ('name', 'path', [options])", function () {
+        describe("compile with: ('name', 'path', [options])", function () {
             it("should return a template when called with ('name', 'path')", function () {
-                var template = guidom.create("syncTwoStr", testFileInfo.fileName1);
+                var template = guidom.compile("syncTwoStr", testFileInfo.fileName1);
                 assert.equal(template(testFileInfo.context1), expected.output1);
                 assert.equal(guidom.templates.syncTwoStr(testFileInfo.context1), expected.output1);
             });
             it("should return a template when called with ('name', 'path', options)", function () {
                 var options = { knowHelpersOnly: true };
-                var template = guidom.create("syncTwoStrOptions", testFileInfo.fileName1, options);
+                var template = guidom.compile("syncTwoStrOptions", testFileInfo.fileName1, options);
                 assert.equal(template(testFileInfo.context1), expected.output1);
                 assert.equal(guidom.templates.syncTwoStrOptions(testFileInfo.context1), expected.output1);
             });
         });
 
-        describe("create with:  ('path', [options]) |or| ({path: 'str', [name: 'str']}, [options])", function () {
+        describe("compile with:  ('path', [options]) |or| ({path: 'str', [name: 'str']}, [options])", function () {
             it("should return a template when called with ('path')", function () {
-                var template = guidom.create(testFileInfo.fileName1);
+                var template = guidom.compile(testFileInfo.fileName1);
                 assert.equal(template(testFileInfo.context1), expected.output1);
             });
             it("should return a template when called with ('path', options)", function () {
                 var options = { knowHelpersOnly: true };
-                var template = guidom.create(testFileInfo.fileName1, options);
+                var template = guidom.compile(testFileInfo.fileName1, options);
                 assert.equal(template(testFileInfo.context1), expected.output1);
             });
 
             it("should return a template when called with ({name: 'str', path: 'str'}), and save it", function () {
-                var template = guidom.create({ name: "syncObject", path: testFileInfo.fileName1 });
+                var template = guidom.compile({ name: "syncObject", path: testFileInfo.fileName1 });
                 assert.equal(template(testFileInfo.context1), expected.output1);
                 assert.equal(guidom.templates.syncObject(testFileInfo.context1), expected.output1);
             });
             it("should return a template when called with ({name: 'str', path: 'str'}, options), and save it", function () {
                 var options = { knowHelpersOnly: true };
-                var template = guidom.create({ name: "syncObjectOptions", path: testFileInfo.fileName1 }, options);
+                var template = guidom.compile({ name: "syncObjectOptions", path: testFileInfo.fileName1 }, options);
                 assert.equal(template(testFileInfo.context1), expected.output1);
                 assert.equal(guidom.templates.syncObjectOptions(testFileInfo.context1), expected.output1);
             });
         });
     });
 
-    describe("#precreate()", function () {
+    describe("#precompile()", function () {
         /**
          * @param  {string} template
          * @param  {string} prefix
@@ -284,79 +284,79 @@ describe("guidom", function () {
         }
 
         /* _-_-_-_-_-_- SYNC METHODS _-_-_-_-_-_- */
-        describe("precreate with args: (array, [options])", function () {
+        describe("precompile with args: (array, [options])", function () {
             // ([{ name: "str", path: "str"}, ...], [options]);
             it("should return a template when called with ([{ name: 'str', path: 'str'}, ...])", function () {
                 var prefix = "preSyncArray";
                 var array = [{ name: prefix + "1", path: testFileInfo.fileName1 }, { name: prefix + "2", path: testFileInfo.fileName2 }];
-                var pretemplates = guidom.precreate(array);
+                var pretemplates = guidom.precompile(array);
                 for (var i = 1; i <= array.length; i++) { testEndPretemplate(pretemplates[prefix + i], prefix, i); }
             });
             it("should return a template when called with ([{ name: 'str' path: 'str'}, ...], options)", function () {
                 var prefix = "preSyncArrayOptions";
                 var array = [{ name: prefix + "1", path: testFileInfo.fileName1 }, { name: prefix + "2", path: testFileInfo.fileName2 }];
                 var options = { knowHelpersOnly: true };
-                var pretemplates = guidom.precreate(array, options);
+                var pretemplates = guidom.precompile(array, options);
                 for (var i = 1; i <= array.length; i++) { testEndPretemplate(pretemplates[prefix + i], prefix, i); }
             });
             it("should return a template when called with (['path', ...])", function () {
                 var prefix = testFileInfo.fileNamePrefix;
                 var array = [testFileInfo.fileName1, testFileInfo.fileName2];
-                var pretemplates = guidom.precreate(array);
+                var pretemplates = guidom.precompile(array);
                 for (var i = 1; i <= array.length; i++) {
                     testEndPretemplate(pretemplates[prefix + i], prefix, i);
                 }
             })
         });
 
-        describe("precreate with args: ('name', 'path', [options])", function () {
+        describe("precompile with args: ('name', 'path', [options])", function () {
             // ("name", "path", [options]);
             it("should return a template when called with ('name', 'path')", function () {
                 var prefix = "preSyncTwoStr";
-                var pretemplate = guidom.precreate(prefix, testFileInfo.fileName1);
+                var pretemplate = guidom.precompile(prefix, testFileInfo.fileName1);
                 testEndPretemplate(pretemplate, prefix);
             });
             it("should return a template when called with ('name', 'path', options)", function () {
                 var prefix = "preSyncTwoStrOptions";
                 var options = { knowHelpersOnly: true };
-                var pretemplate = guidom.precreate(prefix, testFileInfo.fileName1, options);
+                var pretemplate = guidom.precompile(prefix, testFileInfo.fileName1, options);
                 testEndPretemplate(pretemplate, prefix);
             });
         });
 
-        describe("precreate with: ('path', [options]) |or| ({path: 'str', [name: 'str']}, [options])", function () {
+        describe("precompile with: ('path', [options]) |or| ({path: 'str', [name: 'str']}, [options])", function () {
             // ('path', [options]);
             it("should return a template when called with ('path')", function () {
                 var prefix = testFileInfo.fileName1;
-                var pretemplate = guidom.precreate(prefix, testFileInfo.fileName1);
+                var pretemplate = guidom.precompile(prefix, testFileInfo.fileName1);
                 testEndPretemplate(pretemplate, "");
             });
             it("should return a template when called with ('path', options)", function () {
                 var prefix = "preSyncTwoStrOptions";
                 var options = { knowHelpersOnly: true };
-                var pretemplate = guidom.precreate(prefix, testFileInfo.fileName1, options);
+                var pretemplate = guidom.precompile(prefix, testFileInfo.fileName1, options);
                 testEndPretemplate(pretemplate, "");
             });
             // ({name: 'str', path: 'str'}, [options]);
             it("should return a template when called with ({name: 'str', path: 'str'})", function () {
                 var prefix = "preSyncPreObject";
-                var pretemplate = guidom.precreate({ name: prefix, path: testFileInfo.fileName1 });
+                var pretemplate = guidom.precompile({ name: prefix, path: testFileInfo.fileName1 });
                 testEndPretemplate(pretemplate, "");
             });
             it("should return a template when called with ({name: 'str', path: 'str'}, options)", function () {
                 var prefix = "preSyncPreObject";
                 var options = { knowHelpersOnly: true };
-                var pretemplate = guidom.precreate({ name: prefix, path: testFileInfo.fileName1 }, options);
+                var pretemplate = guidom.precompile({ name: prefix, path: testFileInfo.fileName1 }, options);
                 testEndPretemplate(pretemplate, "");
             });
         });
 
         /* _-_-_-_-_-_- ASYNC METHODS _-_-_-_-_-_- */
-        describe("precreate with args (array, [options], callback)", function () {
+        describe("precompile with args (array, [options], callback)", function () {
             it("should return (err, {pretemplates}) to callback when called with (array, callback)", function (done) {
                 var prefix = "preAsyncArray";
                 var array = [{ name: prefix + "1", path: testFileInfo.fileName1 }, { name: prefix + "2", path: testFileInfo.fileName2 }];
-                guidom.precreate(array, function (err, pretemplates) {
+                guidom.precompile(array, function (err, pretemplates) {
                     if (err) return done(err);
                     for (var i = 1; i <= array.length; i++) { testEndPretemplate(pretemplates[prefix + i], prefix, i); }
                     done();
@@ -366,7 +366,7 @@ describe("guidom", function () {
                 var options = { knowHelpersOnly: true };
                 var prefix = "preAsyncArrayOptions";
                 var array = [{ name: prefix + "1", path: testFileInfo.fileName1 }, { name: prefix + "2", path: testFileInfo.fileName2 }];
-                guidom.precreate(array, options, function (err, pretemplates) {
+                guidom.precompile(array, options, function (err, pretemplates) {
                     if (err) return done(err);
                     for (var i = 1; i <= array.length; i++) { testEndPretemplate(pretemplates[prefix + i], prefix, i); }
                     done();
@@ -375,7 +375,7 @@ describe("guidom", function () {
             it("should return (err, {pretemplates}) to callback when called whit (array, callback)", function (done) {
                 var prefix = testFileInfo.fileNamePrefix;
                 var array = [testFileInfo.fileName1, testFileInfo.fileName2];
-                guidom.precreate(array, function (err, pretemplates) {
+                guidom.precompile(array, function (err, pretemplates) {
                     if (err) return done(err);
                     for (var i = 1; i <= array.length; i++) {
                         testEndPretemplate(pretemplates[prefix + i], prefix, i);
@@ -385,10 +385,10 @@ describe("guidom", function () {
             });
         });
 
-        describe("precreate with args ('name', 'path', [options], callback)", function () {
+        describe("precompile with args ('name', 'path', [options], callback)", function () {
             it("should return (err, pretemplate) to callback when called with ('name', 'path', callback)", function (done) {
                 var prefix = "preAsyncTwoStr";
-                guidom.precreate(prefix, testFileInfo.fileName1, function (err, pretemplate) {
+                guidom.precompile(prefix, testFileInfo.fileName1, function (err, pretemplate) {
                     if (err) return done(err);
                     testEndPretemplate(pretemplate, prefix);
                     done();
@@ -397,7 +397,7 @@ describe("guidom", function () {
             it("should return (err, pretemplate) to callback when called with ('name', 'path', options, callback)", function (done) {
                 var options = { knowHelpersOnly: true };
                 var prefix = "preAsyncTwoStrOptions";
-                guidom.precreate(prefix, testFileInfo.fileName1, options, function (err, pretemplate) {
+                guidom.precompile(prefix, testFileInfo.fileName1, options, function (err, pretemplate) {
                     if (err) return done(err);
                     testEndPretemplate(pretemplate, prefix);
                     done();
@@ -405,9 +405,9 @@ describe("guidom", function () {
             });
         });
 
-        describe("precreate with args: ('path', [options], callback) |or| ({path: 'str', [name: 'str']}, [options], callback)", function () {
+        describe("precompile with args: ('path', [options], callback) |or| ({path: 'str', [name: 'str']}, [options], callback)", function () {
             it("should return (err, pretemplate) to callback when called with ('path')", function (done) {
-                guidom.precreate(testFileInfo.fileName1, function (err, pretemplate) {
+                guidom.precompile(testFileInfo.fileName1, function (err, pretemplate) {
                     if (err) return done(err);
                     testEndPretemplate(pretemplate, "");
                     done();
@@ -415,7 +415,7 @@ describe("guidom", function () {
             });
             it("should return (err, pretemplate) to callback when called with ('path', options)", function (done) {
                 var options = { knowHelpersOnly: true };
-                guidom.precreate(testFileInfo.fileName1, options, function (err, pretemplate) {
+                guidom.precompile(testFileInfo.fileName1, options, function (err, pretemplate) {
                     if (err) return done(err);
                     testEndPretemplate(pretemplate, "");
                     done();
@@ -424,7 +424,7 @@ describe("guidom", function () {
 
             it("should return (err, pretemplate) to callback when called with ({name:'str', path: str}, options, callback)", function (done) {
                 var prefix = "preAsyncObject";
-                guidom.precreate({ path: testFileInfo.fileName1, name: prefix }, function (err, pretemplate) {
+                guidom.precompile({ path: testFileInfo.fileName1, name: prefix }, function (err, pretemplate) {
                     if (err) return done(err);
                     testEndPretemplate(pretemplate, prefix);
                     done();
@@ -433,7 +433,7 @@ describe("guidom", function () {
             it("should return (err, template) to callback when called with ({name: 'str', path:'str'}, options, callback)", function (done) {
                 var options = { knowHelpersOnly: true };
                 var prefix = "preAsyncObjectOptions";
-                guidom.precreate({ path: testFileInfo.fileName2, name: prefix }, options, function (err, pretemplate) {
+                guidom.precompile({ path: testFileInfo.fileName2, name: prefix }, options, function (err, pretemplate) {
                     if (err) return done(err);
                     testEndPretemplate(pretemplate, prefix)
                     done();
@@ -450,7 +450,7 @@ describe("guidom", function () {
                 var ind = new String(i);
                 arrayTest.push({ name: ind, path: testFileInfo.fileName1 });
             }
-            guidom.create(arrayTest);
+            guidom.compile(arrayTest);
             var objectTest = {};
             for(var i = 0; i < arrayTest.length; i++){
                 var ind = new String(i);
@@ -460,7 +460,7 @@ describe("guidom", function () {
         });
     }); */
 
-    describe("#openDir()", function () {
+    describe("#compileDir()", function () {
         function testEndDirTemplate(templates, options) {
             var filenames = Object.keys(templates);
             for (var i = 1; i <= templates.length; i++) {
@@ -472,17 +472,17 @@ describe("guidom", function () {
 
         /* _-_-_-_-_-_- SYNC METHODS _-_-_-_-_-_- */
         it("should read should read the contents of a directory whith arg ('dirPath') and return {templates}", function () {
-            testEndDirTemplate(guidom.openDir(testFileInfo.dirName));
+            testEndDirTemplate(guidom.compileDir(testFileInfo.dirName));
         });
 
         it("should read should read the contents of a directory whith arg ('dirPath', options) and return {templates}", function () {
             var options = { knowHelpersOnly: true };
-            testEndDirTemplate(guidom.openDir(testFileInfo.dirName, options), options);
+            testEndDirTemplate(guidom.compileDir(testFileInfo.dirName, options), options);
         });
 
         /* _-_-_-_-_-_- ASYNC METHODS _-_-_-_-_-_- */
         it("should read the contents of a directory whith arg ('dirPath', callback) and return (err, {templates}) to callback", function (done) {
-            guidom.openDir(testFileInfo.dirName, function (err, templates) {
+            guidom.compileDir(testFileInfo.dirName, function (err, templates) {
                 if (!err) testEndDirTemplate(templates);
                 done(err);
             });
@@ -490,14 +490,14 @@ describe("guidom", function () {
 
         it("should read the contents of a directory whith arg ('dirPath', [options], callback) and return (err, {templates}) to callback", function (done) {
             var options = { knowHelpersOnly: true };
-            guidom.openDir(testFileInfo.dirName, options, function (err, templates) {
+            guidom.compileDir(testFileInfo.dirName, options, function (err, templates) {
                 if (!err) testEndDirTemplate(templates, options);
                 done(err);
             });
         });
     });
 
-    describe("#preopenDir()", function () {
+    describe("#precompileDir()", function () {
         function testEndDirPretemplate(templates, options) {
             var handlebars = guidom.getHandlebars();
             var filenames = Object.keys(templates);
@@ -516,17 +516,17 @@ describe("guidom", function () {
 
         /* _-_-_-_-_-_- SYNC METHODS _-_-_-_-_-_- */
         it("should read should read the contents of a directory whith arg ('dirPath') and return {pretemplates}", function () {
-            testEndDirPretemplate(guidom.preopenDir(testFileInfo.dirName));
+            testEndDirPretemplate(guidom.precompileDir(testFileInfo.dirName));
         });
 
         it("should read should read the contents of a directory whith arg ('dirPath', options) and return {pretemplates}", function () {
             var options = { knowHelpersOnly: true };
-            testEndDirPretemplate(guidom.preopenDir(testFileInfo.dirName, options), options);
+            testEndDirPretemplate(guidom.precompileDir(testFileInfo.dirName, options), options);
         });
 
         /* _-_-_-_-_-_- ASYNC METHODS _-_-_-_-_-_- */
         it("should read the contents of a directory whith arg ('dirPath', callback) and return (err, {pretemplates}) to callback", function (done) {
-            guidom.preopenDir(testFileInfo.dirName, function (err, pretemplates) {
+            guidom.precompileDir(testFileInfo.dirName, function (err, pretemplates) {
                 if (!err) testEndDirPretemplate(pretemplates);
                 done(err);
             });
@@ -534,7 +534,7 @@ describe("guidom", function () {
 
         it("should read the contents of a directory whith arg ('dirPath', [options], callback) and return (err, {pretemplates}) to callback", function (done) {
             var options = { knowHelpersOnly: true };
-            guidom.preopenDir(testFileInfo.dirName, options, function (err, pretemplates) {
+            guidom.precompileDir(testFileInfo.dirName, options, function (err, pretemplates) {
                 if (!err) testEndDirPretemplate(pretemplates, options);
                 done(err);
             });
@@ -544,7 +544,7 @@ describe("guidom", function () {
     describe("#saveTemplates", function () {
         it("should not save the template when set to false", function () {
             guidom.saveTemplates(false);
-            var template = guidom.create("notSaved", testFileInfo.fileName1);
+            var template = guidom.compile("notSaved", testFileInfo.fileName1);
             assert.equal(guidom.templates.notSaved, undefined);
             guidom.saveTemplates(true);
         });
@@ -556,9 +556,9 @@ describe("guidom", function () {
     });
 
     describe("#returnSyncTemplates", function () {
-        it("should make sync .create() return the guidom object instead of the template created", function () {
+        it("should make sync .compile() return the guidom object instead of the template created", function () {
             guidom.returnSyncTemplates(false);
-            assert.equal(guidom.create("returnGuidom", testFileInfo.fileName1), guidom);
+            assert.equal(guidom.compile("returnGuidom", testFileInfo.fileName1), guidom);
             guidom.returnSyncTemplates(true);
         });
     });

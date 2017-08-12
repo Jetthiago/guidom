@@ -8,10 +8,10 @@ var handlebars = require("handlebars");
  +-- http://handlebarsjs.com/reference.html
 
  Methods
- +-- create: ...
- +-- openDir: ...
- +-- precreate: ...
- +-- preopenDir: ...
+ +-- compile: ...
+ +-- compileDir: ...
+ +-- precompile: ...
+ +-- precompileDir: ...
  +-- setRoot: ...
  +-- setHandlebars: ...
  +-- saveTemplates: ...
@@ -72,7 +72,7 @@ var guidom = {
         return this._holders.saveTemplates;
     },
     /**
-     * @param  {Boolean} [bool=true] Set false to return guidom object when calling a sync .create function
+     * @param  {Boolean} [bool=true] Set false to return guidom object when calling a sync .compile function
      */
     returnSyncTemplates: function (bool) {
         if (bool == true) {
@@ -213,7 +213,7 @@ var guidom = {
      * @param  {(Function|Object)} [options]
      * @param  {Function} [callback]
      */
-    create: function (firstArg, secondArg, options, callback) {
+    compile: function (firstArg, secondArg, options, callback) {
         var that = this;
         if (typeof callback == "function" || typeof secondArg == "function" || typeof options == "function") {
             // this._loadTemplates();
@@ -377,7 +377,7 @@ var guidom = {
      * @param  {(Function|Object)} [options]
      * @param  {Function} [callback]
      */
-    precreate: function (firstArg, secondArg, options, callback) {
+    precompile: function (firstArg, secondArg, options, callback) {
         var that = this;
         if (typeof callback == "function" || typeof secondArg == "function" || typeof options == "function") {
             // this._loadPretemplates();
@@ -447,7 +447,7 @@ var guidom = {
      * @param  {Object} [options]
      * @param  {Function} [callback]
      */
-    openDir: function (dirName, options, callback) {
+    compileDir: function (dirName, options, callback) {
         if (typeof options == "function") {
             callback = options;
             options = {};
@@ -490,7 +490,7 @@ var guidom = {
             ],
                 function (err, result) {
                     dirfiles = dirfiles.clean(null);
-                    guidom.create(dirfiles, options, function (err, templates) {
+                    guidom.compile(dirfiles, options, function (err, templates) {
                         callback(err, templates);
                     });
                 }
@@ -503,7 +503,7 @@ var guidom = {
                 var pathname = pathmodule.join(dirPathname, dirfiles[i]);
                 if (fs.statSync(pathname).isFile()) {
                     var basename = camelcase(pathmodule.basename(dirfiles[i]));
-                    templates[basename] = guidom.create(basename, pathname, options);
+                    templates[basename] = guidom.compile(basename, pathname, options);
                 }
             }
             return templates;
@@ -515,7 +515,7 @@ var guidom = {
      * @param  {Object} [options]
      * @param  {Function} [callback]
      */
-    preopenDir: function (dirName, options, callback) {
+    precompileDir: function (dirName, options, callback) {
         if (typeof options == "function") {
             callback = options;
             options = {};
@@ -558,7 +558,7 @@ var guidom = {
             ],
                 function (err, result) {
                     dirfiles = dirfiles.clean(null);
-                    guidom.precreate(dirfiles, options, function (err, templates) {
+                    guidom.precompile(dirfiles, options, function (err, templates) {
                         callback(err, templates);
                     });
                 }
@@ -571,7 +571,7 @@ var guidom = {
                 var pathname = pathmodule.join(dirPathname, dirfiles[i]);
                 if (fs.statSync(pathname).isFile()) {
                     var basename = camelcase(pathmodule.basename(dirfiles[i]));
-                    templates[basename] = guidom.precreate(basename, pathname, options);
+                    templates[basename] = guidom.precompile(basename, pathname, options);
                 }
             }
             return templates;

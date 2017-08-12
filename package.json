@@ -1,6 +1,6 @@
 {
   "name": "guidom",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "A Handlebars plugin to help loading template files into the node js runtime, compile it and make available for use faster and without too much effort.",
   "main": "guidom.js",
   "scripts": {
@@ -9,10 +9,17 @@
   "keywords": [
     "handlebars",
     "util",
-    "plugin"
+    "plugin",
+    "compiling",
+    "compile",
+    "templates"
   ],
   "author": "Thiago Marques",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Jetthiago/guidom"
+  },
   "dependencies": {
     "async": "^2.5.0",
     "camelcase": "^4.1.0",
