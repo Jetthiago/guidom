@@ -466,7 +466,7 @@ var guidom = {
                 function (seriesCallback) {
                     var stack = [];
                     dirfiles = dirfiles.map(function (elem) {
-                        return { name: pathmodule.basename(elem), path: pathmodule.join(dirPathname, elem) };
+                        return { name: pathmodule.basename(elem, pathmodule.extname(elem)), path: pathmodule.join(dirPathname, elem) };
                     });
                     for (var i = 0; i < dirfiles.length; i++) {
                         stack[i] = function (index, subSeriesCallback) {
@@ -502,7 +502,7 @@ var guidom = {
             for (var i = 0; i < dirfiles.length; i++) {
                 var pathname = pathmodule.join(dirPathname, dirfiles[i]);
                 if (fs.statSync(pathname).isFile()) {
-                    var basename = camelcase(pathmodule.basename(dirfiles[i]));
+                    var basename = camelcase(pathmodule.basename(dirfiles[i], pathmodule.extname(dirfiles[i])));
                     templates[basename] = guidom.compile(basename, pathname, options);
                 }
             }

@@ -8,9 +8,7 @@ var index = guidom.compile("templates/index.hb");
 /* will return a handlebars template function that you can pass the context (or data if you prefer): */
 index({name: "Boris", id:"455"}); // > Wellcome back Boris, id: 455.
 ```
-I'am working at this documentation. I'll update it when it's ready. For now this will be the placeholder:
-**Side note: I'm not very good at english as it's not my mother tongue so expect grammar errors.**
-**Side note²: I will publish this module to npm when I address the majority of the possible bugs and add the features that I have in mind. For now if you want to use this module clone this repo, use `npm link` and require this module on your own node app. Or add to your dependencies tree: {"guidom": "Jetthiago/guidom"} and `npm install`**
+**Side note: I'm not very good at english as it's not my native language so expect grammar errors.**
 
 * * *
 ### compile(firstArg, [secondArg], [options], [callback])
