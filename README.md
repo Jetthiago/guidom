@@ -3,12 +3,18 @@
 
 A Handlebars plugin to help loading template files into the node js runtime, compile it and make available for use faster and without too much effort. For example: 
 ```js
-/* templates/index.hb > Wellcome back {{name}}, id: {{id}}. */
+/* templates/index.hb > "Welcome back {{name}}, id: {{id}}." */
 var index = guidom.compile("templates/index.hb");
-/* will return a handlebars template function that you can pass the context (or data if you prefer): */
-index({name: "Boris", id:"455"}); // > Wellcome back Boris, id: 455.
+/* will return a handlebars template function so that you can pass the context (or data if you prefer): */
+index({name: "Boris", id:"455"}); // > "Welcome back Boris, id: 455."
 ```
+<<<<<<< HEAD
 **Side note: I'm not very good at english as it's not my native language so expect grammar errors.**
+=======
+This eliminates the need for reading the template using the `fs` module to load every file.
+**Side note: I'm not very good at english as it's not my native language so expect grammar errors.**
+**Side note²: I'm planing to make a new update adding a much better suport for partials, helpers and other Handlebars methods. But only when my college vacations begin.**
+>>>>>>> 552f0ad24d9f6470c0857e864bfc4ec30a832574
 
 * * *
 ### compile(firstArg, [secondArg], [options], [callback])
@@ -21,7 +27,7 @@ index({name: "Boris", id:"455"}); // > Wellcome back Boris, id: 455.
 Returns a regular handlebars template function. Omit the callback to run the function synchronously. Callback receives as arguments ```(err, function)```. When a array is given to ```firstArg``` the result returned will be like: ```{name: function, name2: function, ...}``` as ```name``` being the name given inside the describing object inside the ```firstArg``` array or the basename camellifyed (camelcase) of the file if the name wasn't provided.
 The ```name``` is used as a custom id if you want to return a function already compiled without needing to assign it to a variable. Considering that the name given was ```index``` The function will be saved in ```guidom.templates.index```. But if a ```name``` isn't assingned, a name will be generated using the path. Given path "templates/main-page.hb": ```guidom.templates.mainPage```.
 
-- **List of possible arguments and what each returns (valid for `guidom.precompile()` too:**
+- **List of possible arguments and what each returns (valid for `guidom.precompile()` too):**
 ```js
 guidom.compile(["templates/main-page.hb", ...], [options], [callback]);
 /* returns: {mainPage: function};
@@ -72,14 +78,14 @@ respose.write(guidom.templates.indexPage({firstName: "Jason", secondName: "Brian
 **options**: `Object`  Handlebars options object.
 **callback**: `function(err, templates)`
 
-Pass a dirctory path and the files inside it will be compiled and reuturned.
+Pass a directory path and the files inside it will be compiled and reuturned.
 
 **Example**
 - Given the following directory structure:
 ```
-templates
-|--temp-example.hb
-|--temp-example2.hb
+─templates
+ ├─temp-example.hb
+ └─temp-example2.hb
 ```
 
 ```js
@@ -122,7 +128,7 @@ Modifies all the "creation" methods.
 * **Parameters**
 **obj**: `Object`
 
-Should be used when declaring a Handlebars `helper`, a `partial` and a `decorator`. Example:
+Should be used when declaring a Handlebars `helper`, a `partial`, a `decorator` or any other Handlebars method. Example:
 ```js
 var handlebars = guidom.getHandlebars();
 handlebars.registerHelper('foo', function() {
@@ -162,11 +168,11 @@ Returns the Handlebars module used to compile the templates.
 ### getSaveTemplates()
 * **return**: `Boolean`
 
-Returns `true` if the templates are being set to be autosaved and `false` if not.
+Returns `true` if the templates are being set to be autosaved and `false` otherwise. The default is `true`.
 
 ### getReturnSyncTemplates()
 * **return**: `Boolean`
 
-Returns `true` if the templates are being returned instead of the guidom object and `false` for the contrary
+Returns `true` if the templates are being returned instead of the guidom object and `false` otherwise. The default is `true`.
 
 * * *
